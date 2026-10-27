@@ -1,0 +1,573 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Powered QA Testing Assistant</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      color: #20243a;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #242c55;
+      color: white;
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin-bottom: 8px;
+      font-size: 27px;
+    }
+
+    header p {
+      color: #e0e5ff;
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 25px auto;
+      padding: 0 16px;
+    }
+
+    .notice {
+      background: #fff5d9;
+      border: 1px solid #f0d78b;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 12px;
+      margin-bottom: 22px;
+      box-shadow: 0 3px 12px #18204412;
+    }
+
+    h2 {
+      color: #242c55;
+      font-size: 21px;
+      margin-bottom: 8px;
+    }
+
+    .description {
+      color: #62677c;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 14px 0 6px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #cbd0df;
+      border-radius: 7px;
+      font: inherit;
+      background: white;
+    }
+
+    textarea {
+      min-height: 95px;
+      resize: vertical;
+    }
+
+    button {
+      background: #4658c9;
+      color: white;
+      border: none;
+      padding: 11px 17px;
+      border-radius: 7px;
+      cursor: pointer;
+      margin-top: 14px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #303f9f;
+    }
+
+    .secondary {
+      background: #e8ebff;
+      color: #29378f;
+      margin-left: 5px;
+    }
+
+    .secondary:hover {
+      background: #d9defe;
+    }
+
+    .output {
+      margin-top: 18px;
+      padding: 15px;
+      background: #f8f9fd;
+      border: 1px solid #dfe3f1;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .output h3 {
+      margin-bottom: 10px;
+      color: #242c55;
+    }
+
+    .test-case {
+      border: 1px solid #e0e4f0;
+      background: white;
+      padding: 12px;
+      border-radius: 7px;
+      margin: 10px 0;
+    }
+
+    .test-case p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #e8ebff;
+      color: #29378f;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    footer {
+      text-align: center;
+      color: #666c80;
+      padding: 20px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 22px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>AI-Powered QA Testing Assistant</h1>
+    <p>Generate test ideas, draft bug reports and build AI prompts.</p>
+  </header>
+
+  <main class="container">
+
+    <div class="notice">
+      <strong>Prototype notice:</strong> This version uses predefined
+      testing templates and creates prompts for ChatGPT. It does not
+      connect to a live AI model yet. Generated results must be reviewed.
+    </div>
+
+    <!-- FEATURE 1: TEST CASE GENERATOR -->
+    <section class="card">
+      <h2>1. Test Case Generator</h2>
+      <p class="description">
+        Enter a feature and its requirements to generate initial test ideas.
+      </p>
+
+      <label for="feature">Feature name</label>
+      <input id="feature" placeholder="Example: Login page">
+
+      <label for="requirements">Requirements</label>
+      <textarea id="requirements"
+        placeholder="Example: Users can log in using email and password. Invalid credentials should show an error."></textarea>
+
+      <button onclick="generateTests()">Generate Test Cases</button>
+      <button class="secondary" onclick="downloadCSV()">Download CSV</button>
+
+      <div id="testOutput" class="output" aria-live="polite">
+        Your test cases will appear here.
+      </div>
+    </section>
+
+    <!-- FEATURE 2: BUG REPORT GENERATOR -->
+    <section class="card">
+      <h2>2. Bug Report Generator</h2>
+      <p class="description">
+        Enter the observed problem to create a structured bug report draft.
+      </p>
+
+      <label for="bugTitle">Bug title</label>
+      <input id="bugTitle"
+        placeholder="Example: Login fails with valid credentials">
+
+      <label for="bugSteps">Steps to reproduce</label>
+      <textarea id="bugSteps"
+        placeholder="1. Open login page&#10;2. Enter valid credentials&#10;3. Click Login"></textarea>
+
+      <label for="expected">Expected result</label>
+      <textarea id="expected"
+        placeholder="Describe what should happen"></textarea>
+
+      <label for="actual">Actual result</label>
+      <textarea id="actual"
+        placeholder="Describe what actually happened"></textarea>
+
+      <label for="severity">Severity</label>
+      <select id="severity">
+        <option>Low</option>
+        <option selected>Medium</option>
+        <option>High</option>
+        <option>Critical</option>
+      </select>
+
+      <button onclick="generateBug()">Create Bug Report</button>
+      <button class="secondary" onclick="downloadBug()">Download Report</button>
+
+      <div id="bugOutput" class="output" aria-live="polite">
+        Your bug report will appear here.
+      </div>
+    </section>
+
+    <!-- FEATURE 3: CHATGPT PROMPT BUILDER -->
+    <section class="card">
+      <h2>3. AI Prompt Builder</h2>
+      <p class="description">
+        Create a detailed QA prompt and use it in ChatGPT for AI-generated
+        testing suggestions.
+      </p>
+
+      <label for="promptFeature">Feature to test</label>
+      <input id="promptFeature" placeholder="Example: E-commerce checkout">
+
+      <label for="promptDetails">Feature details</label>
+      <textarea id="promptDetails"
+        placeholder="Describe the feature, business rules and expected behavior"></textarea>
+
+      <button onclick="buildPrompt()">Build AI Prompt</button>
+      <button class="secondary" onclick="copyPrompt()">Copy Prompt</button>
+
+      <div id="promptOutput" class="output" aria-live="polite">
+        Your ChatGPT prompt will appear here.
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    AI-Powered QA Testing Assistant | Learning Project
+  </footer>
+
+  <script>
+    let currentTests = [];
+    let currentBug = "";
+    let currentPrompt = "";
+
+    function value(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function escapeHTML(text) {
+      return text.replace(/[&<>"']/g, function (char) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[char];
+      });
+    }
+
+    
+function generateTests() {
+  const feature = value("feature");
+  const requirements = value("requirements");
+  const output = document.getElementById("testOutput");
+
+  if (!feature || !requirements) {
+    output.textContent = "Please enter both feature name and requirements.";
+    return;
+  }
+
+  const text = (feature + " " + requirements).toLowerCase();
+  const tests = [];
+
+  function add(title, steps, expected, type, priority = "High") {
+    tests.push({
+      id: "TC-" + String(tests.length + 1).padStart(3, "0"),
+      feature: feature,
+      title: title,
+      steps: steps,
+      expected: expected,
+      type: type,
+      priority: priority,
+      status: "Not Run"
+    });
+  }
+
+  if (/cart|product|checkout|e-commerce|ecommerce/.test(text)) {
+    add("Add product to cart",
+      "Open a product and click Add to Cart.",
+      "The selected product appears in the cart.", "Positive");
+
+    add("Check cart total",
+      "Add a product and review the cart total.",
+      "The displayed total follows the configured pricing rules.",
+      "Functional");
+
+    add("Attempt checkout with empty cart",
+      "Empty the cart and try to proceed to checkout.",
+      "The application handles the empty cart appropriately.",
+      "Negative", "Medium");
+  }
+
+  if (/coupon|discount|promo code/.test(text)) {
+    add("Apply a valid coupon",
+      "Enter a valid test coupon and click Apply.",
+      "The coupon is accepted and any applicable discount is shown.",
+      "Positive");
+
+    add("Apply an invalid coupon",
+      "Enter an invalid coupon and click Apply.",
+      "An error message is displayed.", "Negative");
+
+    add("Apply an empty coupon",
+      "Leave the coupon field empty and click Apply.",
+      "The application handles the empty value appropriately.",
+      "Boundary", "Medium");
+  }
+
+  if (/shipping|address|postal code|delivery/.test(text)) {
+    add("Submit valid shipping details",
+      "Enter valid required shipping details and continue.",
+      "The details are accepted and checkout can proceed.",
+      "Positive");
+
+    add("Submit empty shipping details",
+      "Leave required shipping fields empty and continue.",
+      "Required fields are validated.", "Negative");
+
+    add("Enter invalid shipping details",
+      "Enter details in an invalid format and continue.",
+      "Invalid values are handled according to defined validation rules.",
+      "Negative", "Medium");
+  }
+
+  if (/payment|pay|transaction/.test(text)) {
+    add("Complete successful payment",
+      "Use the payment provider's valid test payment details.",
+      "Payment success is shown and the expected order confirmation appears.",
+      "Positive");
+
+    add("Handle payment failure",
+      "Use the payment provider's test failure scenario.",
+      "Payment failure is communicated and the order state is handled correctly.",
+      "Negative");
+
+    add("Prevent repeated payment submission",
+      "Click Pay more than once during submission.",
+      "Duplicate payments or orders are prevented where required.",
+      "Boundary");
+  }
+
+  if (/login|sign in|password|authentication/.test(text)) {
+    add("Login with valid credentials",
+      "Enter valid test credentials and submit.",
+      "The user is logged in successfully.", "Positive");
+
+    add("Login with invalid credentials",
+      "Enter invalid credentials and submit.",
+      "Login is rejected with an appropriate error.",
+      "Negative");
+
+    add("Submit empty login fields",
+      "Leave required fields empty and submit.",
+      "Required fields are validated.", "Negative");
+  }
+
+  if (/search|filter/.test(text)) {
+    add("Search for an existing item",
+      "Enter a search term that matches an existing item.",
+      "Relevant matching results appear.", "Positive");
+
+    add("Search for a nonexistent item",
+      "Enter a term that has no matching items.",
+      "A suitable no-results message or state appears.",
+      "Negative", "Medium");
+  }
+
+  add("Verify UI elements",
+    "Open the feature and inspect labels, controls and layout.",
+    "Elements are visible and usable.", "UI", "Medium");
+
+  output.innerHTML =
+    "<h3>Generated Test Cases: " + tests.length + "</h3>" +
+    "<p><strong>Feature:</strong> " + escapeHTML(feature) + "</p>" +
+    "<p><strong>Requirements:</strong> " +
+    escapeHTML(requirements) + "</p>" +
+    tests.map(function(test) {
+      return `
+        <div class="test-case">
+          <strong>${test.id}: ${escapeHTML(test.title)}</strong>
+          <p><strong>Steps:</strong> ${escapeHTML(test.steps)}</p>
+          <p><strong>Expected:</strong> ${escapeHTML(test.expected)}</p>
+          <p><strong>Priority:</strong> ${test.priority}</p>
+          <p><strong>Status:</strong> ${test.status}</p>
+          <span class="tag">${test.type}</span>
+        </div>`;
+    }).join("") +
+    "<p>These scenarios are selected using keyword rules, not a live AI model. Review them against the actual requirements.</p>";
+
+  currentTests = tests;
+}
+
+
+    function downloadCSV() {
+      if (!currentTests.length) {
+        alert("Generate test cases first.");
+        return;
+      }
+
+      const headers = [
+        "Test Case ID", "Feature", "Test Scenario",
+        "Steps", "Expected Result", "Type", "Status"
+      ];
+
+      const rows = currentTests.map(function (test) {
+        return [
+          test.id, test.feature, test.title,
+          test.steps, test.expected, test.type, test.status
+        ];
+      });
+
+      function csvCell(text) {
+        return '"' + String(text).replace(/"/g, '""') + '"';
+      }
+
+      const csv = [headers, ...rows]
+        .map(row => row.map(csvCell).join(","))
+        .join("\r\n");
+
+      const blob = new Blob(["\uFEFF" + csv], {
+        type: "text/csv;charset=utf-8;"
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "QA_Test_Cases.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function generateBug() {
+      const title = value("bugTitle");
+      const steps = value("bugSteps");
+      const expected = value("expected");
+      const actual = value("actual");
+      const severity = value("severity");
+      const output = document.getElementById("bugOutput");
+
+      if (!title || !steps || !expected || !actual) {
+        output.textContent = "Please complete all bug report fields.";
+        return;
+      }
+
+      currentBug =
+        "BUG REPORT\n" +
+        "==========\n" +
+        "Title: " + title + "\n" +
+        "Severity: " + severity + "\n" +
+        "Environment: Not specified\n\n" +
+        "Steps to Reproduce:\n" + steps + "\n\n" +
+        "Expected Result:\n" + expected + "\n\n" +
+        "Actual Result:\n" + actual + "\n\n" +
+        "Status: New - draft for review\n";
+
+      output.innerHTML =
+        "<h3>Bug Report Draft</h3><pre style='white-space:pre-wrap'>" +
+        escapeHTML(currentBug) + "</pre>" +
+        "<p>Confirm the evidence and severity before submitting this bug.</p>";
+    }
+
+    function downloadBug() {
+      if (!currentBug) {
+        alert("Create a bug report first.");
+        return;
+      }
+
+      const blob = new Blob([currentBug], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "QA_Bug_Report.txt";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function buildPrompt() {
+      const feature = value("promptFeature");
+      const details = value("promptDetails");
+      const output = document.getElementById("promptOutput");
+
+      if (!feature || !details) {
+        output.textContent = "Please enter feature name and details.";
+        return;
+      }
+
+      currentPrompt =
+        "Act as an experienced Software QA Engineer.\n\n" +
+        "Feature: " + feature + "\n" +
+        "Requirements: " + details + "\n\n" +
+        "Tasks:\n" +
+        "1. Identify positive, negative and boundary test scenarios.\n" +
+        "2. Create a test case table with ID, scenario, preconditions, " +
+        "steps, test data, expected result and priority.\n" +
+        "3. Identify missing requirements and ask clarifying questions.\n" +
+        "4. Suggest important edge cases and security considerations.\n" +
+        "5. Do not invent requirements. Clearly label assumptions.\n" +
+        "6. Keep results practical for a manual QA tester.\n\n" +
+        "Return the result in a clear table.";
+
+      output.innerHTML =
+        "<h3>Prompt ready</h3><pre style='white-space:pre-wrap'>" +
+        escapeHTML(currentPrompt) + "</pre>" +
+        "<p>Copy this prompt, paste it into ChatGPT, and review its answer.</p>";
+    }
+
+    async function copyPrompt() {
+      if (!currentPrompt) {
+        alert("Build a prompt first.");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(currentPrompt);
+        alert("Prompt copied. Paste it into ChatGPT.");
+      } catch (error) {
+        alert("Automatic copy failed. Select the displayed prompt and copy it manually.");
+      }
+    }
+  </script>
+</body>
+</html>
